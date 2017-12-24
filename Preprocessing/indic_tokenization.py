@@ -69,8 +69,8 @@ if __name__ == '__main__':
                 tokenized_line=string.join(trivial_tokenize(line,sys.argv[3]),sep=' ')
                 ofile.write(tokenized_line)
 '''
-with codecs.open('sarcastic_raw.txt', 'r', 'utf-8') as ifile:
-    with codecs.open('sarcastic_tokenized_output.txt', 'w', 'utf-8') as ofile:
+with codecs.open('Data_files/sarcastic_raw.txt', 'r', 'utf-8') as ifile:
+    with codecs.open('Data_files/sarcastic_tokenized_output.txt', 'w', 'utf-8') as ofile:
         for line in ifile.readlines():
             tokenized_line = ' '.join(trivial_tokenize(line, "hi"))
             ofile.write(tokenized_line)

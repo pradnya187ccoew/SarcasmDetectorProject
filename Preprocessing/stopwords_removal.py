@@ -28,8 +28,8 @@ with codecs.open("Data_files/sarcastic_normalized_output.txt", "r","utf-8") as s
         for word in words:
             if word not in stopwords:
                 str+= word + " "
-            #else:
-                #print (word)
+            else:
+                print (word)
         f1.write(str+'\n')
 sourceFile.close()
 f1.close()

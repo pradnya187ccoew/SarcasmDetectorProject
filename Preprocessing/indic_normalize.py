@@ -21,7 +21,7 @@
 # @author Anoop Kunchukuttan
 #
 
-import sys, codecs, string, itertools, re
+import sys,os, codecs, string, itertools, re
 
 
 class NormalizerI(object):
@@ -560,8 +560,8 @@ if __name__ == '__main__':
     normalizer = factory.get_normalizer(language, remove_nuktas)
 
     # DO normalization
-    with codecs.open('Data_files/sarcastic_tokenized_output.txt', 'r', 'utf-8') as ifile:
-        with codecs.open('Data_files/sarcastic_normalized_output.txt', 'w', 'utf-8') as ofile:
+    with codecs.open('C:\\Users\\hp-pc\\PycharmProjects\\SarcasmProject\\Data_files\\sarcastic_tokenized_output.txt', 'r', 'utf-8') as ifile:
+        with codecs.open('C:\\Users\\hp-pc\\PycharmProjects\\SarcasmProject\\Data_files\\sarcastic_normalized_output.txt', 'w', 'utf-8') as ofile:
             for line in ifile.readlines():
                 normalized_line = normalizer.normalize(line)
                 ofile.write(normalized_line)

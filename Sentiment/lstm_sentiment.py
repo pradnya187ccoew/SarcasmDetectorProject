@@ -97,7 +97,42 @@ print('Preparing embedding matrix.')
 
 sarc_num_words = min(TOTAL_MAX_NUM_WORDS, len(final_word_index))
 embedding_matrix = np.zeros((TOTAL_MAX_NUM_WORDS, EMBEDDING_DIM))
-sentiment_texts = np.zeros(TOTAL_MAX_NUM_WORDS)
+sentiment_matrix= np.zeros((TOTAL_MAX_NUM_WORDS, 1))
+
+
+
+model={}
+model2={}
+with codecs.open("C:\\Users\\hp-pc\\PycharmProjects\\SarcasmProject\\Sentiment\\Hindi_SentiWordNet","r",encoding="utf-8") as f:
+    content = f.readlines()
+
+
+for word, matrix_id in final_word_index.items():
+    flag=0
+    if matrix_id >= TOTAL_MAX_NUM_WORDS:
+        continue
+    for line in content:
+        words = line.split()
+        pscore=float(words[2])
+        nscore=float(words[3])
+        synonyms=words[4].split(',')
+        #print synonyms
+        if word in synonyms:
+            check=abs(pscore-nscore)
+            if check>=0.1:	#can change
+                if pscore>nscore:
+                    tag=1
+                else:
+                    tag=-1
+            else:
+                tag=0
+            sentiment_matrix[matrix_id]=tag
+            flag=1
+    if flag==0:
+        sentiment_matrix[matrix_id]=0
+
+print('Shape of complete sentiment_features tensor:', sentiment_matrix.shape)
+
 
 for word, matrix_id in final_word_index.items():
     if matrix_id >= TOTAL_MAX_NUM_WORDS:
@@ -105,21 +140,14 @@ for word, matrix_id in final_word_index.items():
     embedding_vector = embeddings_index.get(word)
     if embedding_vector is not None:
         #words not found in embedding index will be all-zeros.
-        embedding_matrix[matrix_id] = embedding_vector
-    text=Text(word)
-    for words in text.words:
-        try:
-            sentiment_texts[matrix_id]=words.polarity
-        except ValueError:
-            sentiment_texts[matrix_id]=0
-matrix_id=matrix_id+1
+        embedding_matrix[matrix_id] = sentiment_matrix[matrix_id] , embedding_vector
+
 
 print ("Embedding Matrix")
 #print (embedding_matrix)
 print ("Embeddings Matrix shape ",embedding_matrix.shape)
 
 
-print('Shape of complete sentiment_features tensor:', sentiment_texts.shape)
 
 
 import keras.backend as K
@@ -197,6 +225,7 @@ X_train, X_test, Y_train, Y_test = train_test_split(data,labels, test_size = 0.2
 print(X_train.shape,Y_train.shape)
 print(X_test.shape,Y_test.shape)
 
+'''
 
 embedding_layer = Embedding(TOTAL_MAX_NUM_WORDS,
                             EMBEDDING_DIM,
@@ -224,7 +253,17 @@ model_final = Model([sequence_input, other_features], model_final)
 
 model_final.compile(loss = 'categorical_crossentropy', optimizer='adadelta',metrics = ['accuracy', prec, rec, f1_score])
 print(model_final.summary())
-
+'''
+model_final = Sequential()
+model_final.add(Embedding(TOTAL_MAX_NUM_WORDS, EMBEDDING_DIM,input_length = data.shape[1], weights=[embedding_matrix]))
+#model.add(BatchNormalization(axis=-1, momentum=0.99, epsilon=0.001, center=True, scale=True, beta_initializer='zeros', gamma_initializer='ones', moving_mean_initializer='zeros', moving_variance_initializer='ones', beta_regularizer=None, gamma_regularizer=None, beta_constraint=None, gamma_constraint=None))
+model_final.add(Dropout(0.35))
+model_final.add(LSTM(200, stateful=False))
+#model.add(BatchNormalization(axis=-1, momentum=0.99, epsilon=0.001, center=True, scale=True, beta_initializer='zeros', gamma_initializer='ones', moving_mean_initializer='zeros', moving_variance_initializer='ones', beta_regularizer=None, gamma_regularizer=None, beta_constraint=None, gamma_constraint=None))
+model_final.add(Dropout(0.35))
+model_final.add(Dense(2,activation='softmax')) #here 2 becuase of label tensor shape
+model_final.compile(loss = 'categorical_crossentropy', optimizer='adadelta',metrics = ['accuracy', prec, rec, f1_score])
+print(model_final.summary())
 
 
 early_stop = EarlyStopping(monitor='val_loss', min_delta=0, patience=3, verbose=1, mode='min')
@@ -245,7 +284,7 @@ plot.xlabel('epoch')
 plot.ylim(0,2)
 plot.xlim(0,100)
 plot.legend(['train', 'validation'], loc='upper right')
-plot.savefig('lstm_final.png')
+plot.savefig('lstm_sentiment.png')
 plot.show()
 
 
